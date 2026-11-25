@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F3A68">
+<title>과목별 출석부</title>
+<!--
+  ============================================================
+   과목별 출석부 웹앱 감싸기 페이지 (GitHub Pages 용)
+  ============================================================
+   왜: 앱스스크립트 웹앱을 바로 열면 위에 "Google이 아닌 사용자가 만든 앱" 안내 띠가 떠요.
+       이 페이지가 웹앱을 화면 가득 iframe 으로 감싸서 그 띠 없이 보이게 해요.
+   할 일: 아래 WEBAPP_URL 에 출석부 웹앱 주소( …/exec )를 넣기. 그 밖에는 고칠 것 없음.
+   ※ 웹앱 쪽 Code.gs 의 doGet 에 .setXFrameOptionsMode(ALLOWALL) 이 있어야 감쌀 수 있어요.
+   ※ 이 페이지에는 웹앱 주소만 들어가요. 로그인 정보·아이디는 넣지 않아요.
+-->
+<style>
+  /* 화면 전체를 웹앱이 차지 (휴대폰 주소창 높이 변화까지 맞춤) */
+  html, body { margin: 0; height: 100%; background: #F3F6FA; }
+  body { overflow: hidden; }
+  #app { position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; border: 0; display: block; }
+  /* 웹앱이 뜨기 전 잠깐 보이는 화면 */
+  #wait { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+          font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: #5B6B85;
+          background: #F3F6FA; transition: opacity .3s; text-align: center; padding: 16px; }
+  #wait.gone { opacity: 0; pointer-events: none; }
+  #wait svg { width: 160px; height: auto; }
+  #wait a { color: #1F3A68; font-weight: 700; }
+  #slow { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    /* 연필이 살짝 움직임 (움직임 줄이기 설정이면 멈춤) */
+    #wait svg .pen { animation: write 1.2s ease-in-out infinite alternate; transform-box: view-box; transform-origin: 150px 30px; }
+    @keyframes write { to { transform: translate(-6px, 3px); } }
+  }
+</style>
+</head>
+<body>
+  <!-- 불러오는 동안: 펼친 출석부 그림 (웹앱 로그인 화면과 같은 그림) -->
+  <div id="wait" role="status">
+    <svg viewBox="0 0 200 120" aria-hidden="true">
+      <path d="M14 104c0-46 38-84 86-84s86 38 86 84z" fill="#E6EDF7"/>
+      <g fill="#fff" stroke="#1E2F4D" stroke-width="2.2" stroke-linejoin="round"><path d="M30 34q35-12 70 0v62q-35-12-70 0z"/><path d="M100 34q35-12 70 0v62q-35-12-70 0z"/></g>
+      <path d="M110 48h52M110 60h52M110 72h52M110 84h52M130 42v46M146 42v46" stroke="#A3B0C4" stroke-width="1.4" fill="none"/>
+      <path d="M117 57l5-7M117 81l5-7" stroke="#C8322B" stroke-width="2.6" stroke-linecap="round"/>
+      <g class="pen"><g transform="rotate(-32 150 26)"><rect x="120" y="20" width="50" height="11" rx="2.5" fill="#1F3A68" stroke="#1E2F4D" stroke-width="2.2"/><path d="M170 20l12 5.5-12 5.5z" fill="#FCF5E9" stroke="#1E2F4D" stroke-width="2.2"/></g></g>
+      <path d="M10 104h180" stroke="#1E2F4D" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <div>출석부를 여는 중이에요…</div>
+    <div id="slow">오래 걸리면 <a id="direct" href="#" target="_top" rel="noopener">웹앱을 바로 열기</a></div>
+  </div>
+
+  <iframe id="app" title="과목별 출석부" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+
+<script>
+  // ▼▼▼ 여기에 출석부 웹앱 주소(…/exec)를 넣으세요 ▼▼▼
+  const WEBAPP_URL = 'https://script.google.com/macros/s/여기에_배포_ID/exec';
+  // ▲▲▲
+
+  const frame = document.getElementById('app'), wait = document.getElementById('wait');
+  document.getElementById('direct').href = WEBAPP_URL;          // 감싸기가 안 될 때 바로 여는 길
+  frame.src = WEBAPP_URL;
+  // 웹앱이 다 뜨면 기다림 화면을 걷어 냄
+  frame.addEventListener('load', () => { wait.classList.add('gone'); setTimeout(() => wait.remove(), 400); });
+  // 15초가 지나도 안 뜨면 '바로 열기' 안내
+  setTimeout(() => { const s = document.getElementById('slow'); if (s) s.style.display = 'block'; }, 15000);
+</script>
+</body>
+</html>
